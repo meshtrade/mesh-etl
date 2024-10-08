@@ -9,12 +9,17 @@ import (
 )
 
 type Model struct {
-	value string
-	ascii []rune
+	Value string
+	Ascii []rune
 }
 
-func main() {
+func Main() {
+	stateStore := NewInMemoryStateStore()
+
+	stateStore.Set(context.Background(), "idx", "0")
+
 	simplePipeline := etl.NewPipeline(
+		stateStore,
 		// collect
 		NewSliceDataCollector(
 			[]string{"a", "b", "c", "d", "e"},
@@ -28,8 +33,8 @@ func main() {
 				asciiValues = append(asciiValues, v)
 			}
 			return Model{
-				value: s,
-				ascii: asciiValues,
+				Value: s,
+				Ascii: asciiValues,
 			}
 		},
 
@@ -40,7 +45,7 @@ func main() {
 		NewSTDOutEmitter(),
 	)
 
-	if err := simplePipeline.Execute(context.Background()); err != nil {
+	if err := simplePipeline.Execute(context.Background(), "idx"); err != nil {
 		log.Fatal("error during pipeline execution")
 	}
 }
