@@ -2,6 +2,7 @@ package parquet
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"reflect"
 	"time"
@@ -96,7 +97,7 @@ func buildArrowFieldsAndBuilders(pool memory.Allocator, elemType reflect.Type) (
 	return arrowFields, fieldBuilders, nil
 }
 
-func (s *ParquetSerialiser[T]) Marshal(inputStruct []T) ([]byte, error) {
+func (s *ParquetSerialiser[T]) Marshal(ctx context.Context, inputStruct []T) ([]byte, error) {
 	// get the reflection value of the input slice
 	timeType := reflect.TypeOf(time.Time{})
 

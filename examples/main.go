@@ -1,11 +1,8 @@
 package examples
 
 import (
-	"context"
-	"log"
-
-	"github.com/meshtrade/mesh-etl/etl"
 	"github.com/meshtrade/mesh-etl/etl/parquet"
+	"github.com/meshtrade/mesh-etl/etl/pipeline"
 )
 
 type Model struct {
@@ -14,38 +11,20 @@ type Model struct {
 }
 
 func Main() {
-	stateStore := NewInMemoryStateStore()
 
-	stateStore.Set(context.Background(), "idx", "0")
-
-	simplePipeline := etl.NewPipeline(
-		stateStore,
-		// collect
-		NewSliceDataCollector(
-			[]string{"a", "b", "c", "d", "e"},
-			1,
+	pipeline.NewPipeline(
+		pipeline.Source[string](
+			NewSliceDataCollector(
+				[]string{},
+				0,
+			).Collect,
 		),
-
-		// translate
-		func(s string) Model {
-			asciiValues := []rune{}
-			for _, v := range s {
-				asciiValues = append(asciiValues, v)
-			}
-			return Model{
-				Value: s,
-				Ascii: asciiValues,
-			}
-		},
-
-		// serialise
-		&parquet.ParquetSerialiser[Model]{},
-
-		// emit
-		NewSTDOutEmitter(),
+		pipeline.Stage[string, byte](
+			parquet.NewParquetSerialiser[string]().Marshal,
+		),
+		pipeline.Sink[byte](
+			NewSTDOutEmitter().Emit,
+		),
 	)
 
-	if err := simplePipeline.Execute(context.Background(), "idx"); err != nil {
-		log.Fatal("error during pipeline execution")
-	}
 }

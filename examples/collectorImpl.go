@@ -2,8 +2,6 @@ package examples
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/meshtrade/mesh-etl/etl"
 )
@@ -25,15 +23,6 @@ func NewSliceDataCollector(_data []string, _batchSize int) *SliceDataCollector {
 }
 
 // Collect implements etl.DataCollector.
-func (d *SliceDataCollector) Collect(ctx context.Context, pagingToken string) ([]string, string, error) {
-	// interpret paging token as integer to index into slice
-	idx, err := strconv.Atoi(pagingToken)
-	if err != nil {
-		return nil, "", fmt.Errorf("could not interpret paging token as int")
-	}
-
-	// collect batch data
-	batch := d.data[idx : idx+d.batchSize]
-
-	return batch, string(idx + d.batchSize), nil
+func (d *SliceDataCollector) Collect(ctx context.Context) ([]string, error) {
+	return d.data, nil
 }
