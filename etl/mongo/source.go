@@ -9,13 +9,15 @@ import (
 )
 
 type MongoCollector[T any] struct {
-	collection mongo.Collection
-	query      bson.D
+	collection  mongo.Collection
+	query       bson.D
+	findOptions []*options.FindOptions
 }
 
-func NewMongoCollector[T any](collection mongo.Collection, query bson.D) *MongoCollector[T] {
+func NewMongoCollector[T any](collection mongo.Collection, query bson.D, opts ...*options.FindOptions) *MongoCollector[T] {
 	return &MongoCollector[T]{
-		collection: collection,
+		collection:  collection,
+		findOptions: opts,
 	}
 }
 
@@ -23,16 +25,16 @@ func (m *MongoCollector[T]) Collect(ctx context.Context) ([]T, error) {
 	cursor, err := m.collection.Find(
 		ctx,
 		m.query,
-		options.Find(),
+		m.findOptions...,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	results := []T{}
-	if err := cursor.All(ctx, results); err != nil {
+	records := []T{}
+	if err := cursor.All(ctx, records); err != nil {
 		return nil, err
 	}
 
-	return results, nil
+	return records, nil
 }
