@@ -1,4 +1,4 @@
-package etl
+package examples
 
 import "context"
 

@@ -3,11 +3,9 @@ package examples
 import (
 	"context"
 	"fmt"
-
-	"github.com/meshtrade/mesh-etl/etl"
 )
 
-var _ etl.DataEmitter = &StdOutEmitter{}
+var _ DataEmitter = &StdOutEmitter{}
 
 type StdOutEmitter struct {
 }
