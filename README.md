@@ -22,12 +22,11 @@ Pipeline(
 
 ### Source
 
-A source component should be responsible for ingesting data from some resilient data store or streams. Sources can either be chained or joined. Chaining sources is useful when you need to combine data from multiple data stores or streams, in a sequence. Joining is useful when you can collect the data from the sources in parallel and you want to merge the data into a single entity.
+A source component should be responsible for ingesting data from some resilient data store or streams. Sources can either be chained or joined. Chaining sources is useful when you need to combine data from multiple data stores or streams, in a sequence.
 
 #### Source Operators
 
 - ```SequenceSource(Source[T], ChainedSource[T,V]) -> Source[V]```: Used to chain together two depdent sources, the second source is a special source implementation that takes the result returned from the first source and passes it to the second
-- ```Join(Source[T], Source[V], func(T, V) -> K) -> Source[K]```: Used to execute two sources concurrently and join the results using a joining function into a new data source type.
 
 ### Stage
 

@@ -1,7 +1,7 @@
-package examples
+package main
 
 import "context"
 
-type DataEmitter interface {
-	Emit(ctx context.Context, data []byte) error
+type DataEmitter[T any] interface {
+	Emit(ctx context.Context, value T) error
 }

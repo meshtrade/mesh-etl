@@ -3,15 +3,15 @@ package pipeline
 import "context"
 
 type Pipeline[T, V any] struct {
-	source Source[T]
-	stage  Stage[T, V]
-	sink   Sink[V]
+	source source[T]
+	stage  stage[T, V]
+	sink   sink[V]
 }
 
 func NewPipeline[T, V any](
-	source Source[T],
-	stage Stage[T, V],
-	sink Sink[V],
+	source source[T],
+	stage stage[T, V],
+	sink sink[V],
 ) *Pipeline[T, V] {
 	return &Pipeline[T, V]{
 		source: source,
@@ -21,15 +21,15 @@ func NewPipeline[T, V any](
 }
 
 func (p *Pipeline[T, V]) Execute(ctx context.Context) error {
-	values, err := p.source(ctx)
+	sourceChannel, err := p.source(ctx)
 	if err != nil {
 		return err
 	}
 
-	stageValues, err := p.stage(ctx, values)
+	stageChannel, err := p.stage(ctx, sourceChannel)
 	if err != nil {
 		return err
 	}
 
-	return p.sink(ctx, stageValues)
+	return p.sink(ctx, stageChannel)
 }

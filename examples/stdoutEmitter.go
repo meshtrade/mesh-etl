@@ -1,20 +1,18 @@
-package examples
+package main
 
 import (
 	"context"
 	"fmt"
 )
 
-var _ DataEmitter = &StdOutEmitter{}
-
-type StdOutEmitter struct {
+type StdOutEmitter[T any] struct {
 }
 
-func NewSTDOutEmitter() *StdOutEmitter {
-	return &StdOutEmitter{}
+func NewSTDOutEmitter[T any]() *StdOutEmitter[T] {
+	return &StdOutEmitter[T]{}
 }
 
-func (e *StdOutEmitter) Emit(ctx context.Context, data []byte) error {
-	fmt.Printf("Data: %v\n", data)
+func (e *StdOutEmitter[T]) Emit(ctx context.Context, value T) error {
+	fmt.Printf("Data: %v\n", value)
 	return nil
 }
