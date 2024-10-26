@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/meshtrade/mesh-etl/etl/pipeline"
@@ -14,27 +15,35 @@ type Model struct {
 func main() {
 	pipeline := pipeline.NewPipeline(
 		pipeline.SequenceSource(
-			pipeline.SourceScalar(func(ctx context.Context) (int, error) {
-				return 0, nil
+			pipeline.SourceScalar(func(ctx context.Context, ps *pipeline.PipelineState) (int, error) {
+				ps.RegisterAfterEffect(func(ctx context.Context) error {
+					fmt.Println("Got return value: ", 1)
+					return nil
+				})
+				return 1, nil
 			}),
-			pipeline.ChainedSourceScalar(func(ctx context.Context, in int) ([]int, error) {
-				return []int{1, 2, 3, 4}, nil
-			}),
-		),
-		pipeline.SequenceStage(
-			pipeline.Map(func(ctx context.Context, inValue int) int {
-				return inValue * inValue
-			}),
-			pipeline.Map(func(ctx context.Context, inValue int) Model {
-				return Model{
-					Value: inValue,
-				}
+			pipeline.ChainedSourceScalar(func(ctx context.Context, p *pipeline.PipelineState, input int) ([]int, error) {
+				return []int{}, nil
 			}),
 		),
-		pipeline.Emit(NewSTDOutEmitter[Model]().Emit),
+		pipeline.Map(func(ctx context.Context, p *pipeline.PipelineState, input int) int {
+			return 0
+		}),
+		pipeline.Emit(func(ctx context.Context, p *pipeline.PipelineState, input int) error {
+			return nil
+		}),
 	)
 
 	if err := pipeline.Execute(context.Background()); err != nil {
 		log.Fatal(err)
 	}
+
+	if err := pipeline.Execute(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := pipeline.Execute(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+
 }

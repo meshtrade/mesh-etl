@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 
+	"github.com/meshtrade/mesh-etl/etl/pipeline"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,7 +22,7 @@ func NewMongoCollector[T any](collection mongo.Collection, query bson.D, opts ..
 	}
 }
 
-func (m *MongoCollector[T]) Collect(ctx context.Context) ([]T, error) {
+func (m *MongoCollector[T]) Collect(ctx context.Context, pipelineState *pipeline.PipelineState) (chan T, error) {
 	cursor, err := m.collection.Find(
 		ctx,
 		m.query,
@@ -36,5 +37,11 @@ func (m *MongoCollector[T]) Collect(ctx context.Context) ([]T, error) {
 		return nil, err
 	}
 
-	return records, nil
+	outputChannel := make(chan T, len(records))
+	for _, record := range records {
+		outputChannel <- record
+	}
+	close(outputChannel)
+
+	return outputChannel, nil
 }

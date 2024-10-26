@@ -12,6 +12,7 @@ import (
 	"github.com/apache/arrow/go/v17/arrow/memory"
 	"github.com/apache/arrow/go/v17/parquet"
 	"github.com/apache/arrow/go/v17/parquet/pqarrow"
+	"github.com/meshtrade/mesh-etl/etl/pipeline"
 	"github.com/rs/zerolog/log"
 )
 
@@ -97,7 +98,13 @@ func buildArrowFieldsAndBuilders(pool memory.Allocator, elemType reflect.Type) (
 	return arrowFields, fieldBuilders, nil
 }
 
-func (s *ParquetSerialiser[T]) Marshal(ctx context.Context, inputStruct []T) ([]byte, error) {
+func (s *ParquetSerialiser[T]) Serialise(ctx context.Context, p *pipeline.PipelineState, inChannel chan T) (chan []byte, error) {
+	// collect values from channel
+	inputStruct := []T{}
+	for inValue := range inChannel {
+		inputStruct = append(inputStruct, inValue)
+	}
+
 	// get the reflection value of the input slice
 	timeType := reflect.TypeOf(time.Time{})
 
@@ -166,7 +173,12 @@ func (s *ParquetSerialiser[T]) Marshal(ctx context.Context, inputStruct []T) ([]
 	// NOTE: NEVER call close in defer function!
 	pw.Close()
 
-	return dataBuffer.Bytes(), nil
+	// load value into output channel
+	outputChannel := make(chan []byte, 1)
+	outputChannel <- dataBuffer.Bytes()
+	close(outputChannel)
+
+	return outputChannel, nil
 }
 
 func (s *ParquetSerialiser[T]) appendStructValues(builder *array.StructBuilder, structVal reflect.Value) error {
