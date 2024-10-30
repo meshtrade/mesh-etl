@@ -105,6 +105,14 @@ func (s *ParquetSerialiser[T]) Serialise(ctx context.Context, p *pipeline.Pipeli
 		inputStruct = append(inputStruct, inValue)
 	}
 
+	// check if there is data to serialise
+	if len(inputStruct) == 0 {
+		outChannel := make(chan []byte, 1)
+		outChannel <- []byte{}
+		close(outChannel)
+		return outChannel, nil
+	}
+
 	// get the reflection value of the input slice
 	timeType := reflect.TypeOf(time.Time{})
 
