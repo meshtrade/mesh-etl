@@ -110,6 +110,9 @@ func SequenceSource[T, V any](source1 source[T], source2 chainedSource[T, V]) so
 
 		// execute source2 given source1
 		source2Chan, err := source2(ctx, p, source1Chan)
+		if err != nil {
+			return nil, err
+		}
 
 		// load source2 data into channel
 		chainChannel := make(chan V, len(source2Chan))
