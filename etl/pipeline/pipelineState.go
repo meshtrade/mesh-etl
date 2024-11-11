@@ -23,8 +23,11 @@ func (p *PipelineState) RegisterAfterEffect(afterEffect AfterEffect) {
 }
 
 func (p *PipelineState) RunAfterEffects(ctx context.Context) error {
-	errGroup := new(errgroup.Group)
+	if len(p.afterEffects) == 0 {
+		return nil
+	}
 
+	errGroup := new(errgroup.Group)
 	for _, afterEffect := range p.afterEffects {
 		errGroup.Go(func() error {
 			return afterEffect(ctx)
