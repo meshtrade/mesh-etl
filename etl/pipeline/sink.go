@@ -41,14 +41,13 @@ func Spread[T any](sinks ...sink[T]) sink[T] {
 		for range sinks {
 			// allocate sink channel to hold values
 			sinkChannel := make(chan T, len(inChannel))
+			// close channel to indicate no more data will be sent
+			defer close(sinkChannel)
 
 			// load input values into new sink channel
 			for _, inValue := range inValues {
 				sinkChannel <- inValue
 			}
-
-			// close channel to indicate no more data will be sent
-			close(sinkChannel)
 
 			// add channel to list of channels
 			sinkChannels = append(sinkChannels, sinkChannel)
