@@ -18,12 +18,12 @@ func SourceBatch[T any](sourceFunc func(context.Context, *PipelineState) ([]T, e
 
 		// create batch channel
 		batchChan := make(chan T, len(batch))
+		defer close(batchChan)
 
 		// load batch into channel into channel if nothing went wrong
 		for _, element := range batch {
 			batchChan <- element
 		}
-		close(batchChan)
 
 		return batchChan, nil
 	}
@@ -44,10 +44,10 @@ func ChainedSourceBatch[T, V any](sourceFunc func(context.Context, *PipelineStat
 		}
 
 		outChannel := make(chan V, len(outValues))
+		defer close(outChannel)
 		for _, outValue := range outValues {
 			outChannel <- outValue
 		}
-		close(outChannel)
 
 		return outChannel, nil
 	}
@@ -91,10 +91,10 @@ func ChainedSourceScalar[T, V any](sourceFunc func(context.Context, *PipelineSta
 
 		// collect output
 		outChannel := make(chan V, len(outValues))
+		defer close(outChannel)
 		for _, outValue := range outValues {
 			outChannel <- outValue
 		}
-		close(outChannel)
 
 		return outChannel, nil
 	}
@@ -113,10 +113,10 @@ func SequenceSource[T, V any](source1 source[T], source2 chainedSource[T, V]) so
 
 		// load source2 data into channel
 		chainChannel := make(chan V, len(source2Chan))
+		defer close(chainChannel)
 		for source2Value := range source2Chan {
 			chainChannel <- source2Value
 		}
-		close(chainChannel)
 
 		return chainChannel, err
 	}

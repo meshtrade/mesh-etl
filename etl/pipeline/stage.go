@@ -11,12 +11,12 @@ func Map[T, V any](mapFunc func(context.Context, *PipelineState, T) V) stage[T, 
 	return func(ctx context.Context, p *PipelineState, inChannel chan T) (chan V, error) {
 		// create channel with buffer for each element in inChannel
 		mapChan := make(chan V, len(inChannel))
+		defer close(mapChan)
 
 		// map values from inChannel
 		for inValue := range inChannel {
 			mapChan <- mapFunc(ctx, p, inValue)
 		}
-		close(mapChan)
 
 		return mapChan, nil
 	}
@@ -26,6 +26,7 @@ func Filter[T any](filterFunc func(context.Context, *PipelineState, T) bool) sta
 	return func(ctx context.Context, p *PipelineState, inChannel chan T) (chan T, error) {
 		// optimistically allocate buffer for all elements in input channel
 		filterChan := make(chan T, len(inChannel))
+		defer close(filterChan)
 
 		// filter values from inChannel
 		for inValue := range inChannel {
@@ -48,17 +49,17 @@ func Shuffle[T any]() stage[T, T] {
 			idx++
 		}
 
-		// shuffle the data (NOTE: Assuming Go 1.20 which automatically sets seed)
+		// shuffle the data (NOTE: Assuming Go 1.20 runtime which automatically sets seed)
 		rand.Shuffle(len(inputValues), func(i, j int) {
 			inputValues[i], inputValues[j] = inputValues[j], inputValues[i]
 		})
 
 		// load data into return channel
 		outChannel := make(chan T, len(inputValues))
+		defer close(outChannel)
 		for _, inputValue := range inputValues {
 			outChannel <- inputValue
 		}
-		close(outChannel)
 
 		return outChannel, nil
 	}
