@@ -22,6 +22,25 @@ func Map[T, V any](mapFunc func(context.Context, *PipelineState, T) V) stage[T, 
 	}
 }
 
+func MapError[T, V any](mapFunc func(context.Context, *PipelineState, T) (V, error)) stage[T, V] {
+	return func(ctx context.Context, p *PipelineState, inChannel chan T) (chan V, error) {
+		// create channel with buffer for each element in inChannel
+		mapChan := make(chan V, len(inChannel))
+
+		// map values from inChannel
+		for inValue := range inChannel {
+			value, err := mapFunc(ctx, p, inValue)
+			if err != nil {
+				return nil, err
+			}
+			mapChan <- value
+		}
+		close(mapChan)
+
+		return mapChan, nil
+	}
+}
+
 func Filter[T any](filterFunc func(context.Context, *PipelineState, T) bool) stage[T, T] {
 	return func(ctx context.Context, p *PipelineState, inChannel chan T) (chan T, error) {
 		// optimistically allocate buffer for all elements in input channel
