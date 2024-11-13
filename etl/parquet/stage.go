@@ -186,6 +186,7 @@ func (s *ParquetSerialiser[T]) appendStructValues(builderIdx int, structVal refl
 				if err != nil {
 					return -1, err
 				}
+				continue
 			}
 		default:
 			return -1, fmt.Errorf("unsupported field type: %s", fieldVal.Kind())
