@@ -37,13 +37,4 @@ func main() {
 	if err := pipeline.Execute(context.Background()); err != nil {
 		log.Fatal(err)
 	}
-
-	if err := pipeline.Execute(context.Background()); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := pipeline.Execute(context.Background()); err != nil {
-		log.Fatal(err)
-	}
-
 }
