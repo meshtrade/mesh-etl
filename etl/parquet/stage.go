@@ -179,7 +179,6 @@ func (s *ParquetSerialiser[T]) appendStructValues(builderIdx int, structVal refl
 				// add date time value
 				timeVal := fieldVal.Interface().(time.Time)
 				s.fieldBuilders[builderIdx].(*array.Date64Builder).Append(arrow.Date64FromTime(timeVal))
-				continue
 			} else {
 				// recursively add struct values
 				var err error
