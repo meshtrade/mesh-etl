@@ -69,6 +69,10 @@ func buildArrowFieldsAndBuilders(arrowFields []arrow.Field, fieldBuilders []arra
 			arrowFields = append(arrowFields, arrow.Field{Name: field.Name, Type: arrow.PrimitiveTypes.Float64, Nullable: false})
 			fieldBuilders = append(fieldBuilders, array.NewFloat64Builder(pool))
 
+		case reflect.Bool:
+			arrowFields = append(arrowFields, arrow.Field{Name: field.Name, Type: arrow.FixedWidthTypes.Boolean, Nullable: false})
+			fieldBuilders = append(fieldBuilders, array.NewBooleanBuilder(pool))
+
 		case reflect.Struct:
 			if field.Type == reflect.TypeOf(time.Time{}) {
 				arrowFields = append(arrowFields, arrow.Field{Name: field.Name, Type: arrow.FixedWidthTypes.Date64, Nullable: false})
@@ -173,6 +177,10 @@ func (s *ParquetSerialiser[T]) appendStructValues(builderIdx int, structVal refl
 		case reflect.Float64:
 			// add float value
 			s.fieldBuilders[builderIdx].(*array.Float64Builder).Append(fieldVal.Float())
+
+		case reflect.Bool:
+			// add bool value
+			s.fieldBuilders[builderIdx].(*array.BooleanBuilder).Append(fieldVal.Bool())
 
 		case reflect.Struct:
 			if fieldVal.Type() == timeType {
